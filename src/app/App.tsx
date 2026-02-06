@@ -676,7 +676,9 @@ export default function App() {
         {currentView === "submissions" && (
           <SubmissionsPage candidateId={currentUser?.id} />
         )}
-        {currentView === "profile" && <ProfilePage userId={currentUser?.id || ""} />}
+        {currentView === "profile" && (
+          <ProfilePage userId={currentUser?.id || ""} />
+        )}
         {currentView === "workbench" &&
           selectedChallengeId &&
           selectedChallenge && (
