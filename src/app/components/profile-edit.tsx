@@ -5,8 +5,10 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { apiCall } from "../utils/api";
 import { parseResumeText } from "../utils/resume-parser";
+import { API_BASE_URL } from "../../config/api";
 
 interface Experience {
+  id?: string;
   company: string;
   role: string;
   location?: string;
@@ -16,6 +18,7 @@ interface Experience {
 }
 
 interface Education {
+  id?: string;
   degree: string;
   institution: string;
   location?: string;
@@ -29,11 +32,12 @@ interface Skills {
 }
 
 interface ProfileEditProps {
+  userId?: string;
   onSave?: (data: any) => void;
   onCancel?: () => void;
 }
 
-export function ProfileEdit({ onSave, onCancel }: ProfileEditProps) {
+export function ProfileEdit({ userId, onSave, onCancel }: ProfileEditProps) {
   const [headline, setHeadline] = useState("");
   const [summary, setSummary] = useState("");
   const [location, setLocation] = useState("");
@@ -105,8 +109,49 @@ export function ProfileEdit({ onSave, onCancel }: ProfileEditProps) {
     setExperiences(updated);
   };
 
-  const handleRemoveExperience = (index: number) => {
-    setExperiences(experiences.filter((_, i) => i !== index));
+  const handleRemoveExperience = async (index: number) => {
+    try {
+      const experience = experiences[index];
+
+      // If experience has an ID, delete it from backend
+      if (experience.id) {
+        await apiCall<any>(
+          `${API_BASE_URL}/api/profile/experience/${experience.id}`,
+          { method: "DELETE" },
+        );
+      }
+
+      setExperiences(experiences.filter((_, i) => i !== index));
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to remove experience",
+      );
+    }
+  };
+
+  const handleSaveExperience = async (experience: Experience) => {
+    try {
+      if (experience.id) {
+        // Update existing
+        await apiCall<any>(
+          `${API_BASE_URL}/api/profile/experience/${experience.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify(experience),
+          },
+        );
+      } else {
+        // Add new
+        await apiCall<any>(`${API_BASE_URL}/api/profile/experience`, {
+          method: "POST",
+          body: JSON.stringify(experience),
+        });
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to save experience",
+      );
+    }
   };
 
   const handleAddEducation = () => {
@@ -131,8 +176,47 @@ export function ProfileEdit({ onSave, onCancel }: ProfileEditProps) {
     setEducations(updated);
   };
 
-  const handleRemoveEducation = (index: number) => {
-    setEducations(educations.filter((_, i) => i !== index));
+  const handleRemoveEducation = async (index: number) => {
+    try {
+      const education = educations[index];
+
+      // If education has an ID, delete it from backend
+      if (education.id) {
+        await apiCall<any>(
+          `${API_BASE_URL}/api/profile/education/${education.id}`,
+          { method: "DELETE" },
+        );
+      }
+
+      setEducations(educations.filter((_, i) => i !== index));
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to remove education",
+      );
+    }
+  };
+
+  const handleSaveEducation = async (education: Education) => {
+    try {
+      if (education.id) {
+        // Update existing
+        await apiCall<any>(
+          `${API_BASE_URL}/api/profile/education/${education.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify(education),
+          },
+        );
+      } else {
+        // Add new
+        await apiCall<any>(`${API_BASE_URL}/api/profile/education`, {
+          method: "POST",
+          body: JSON.stringify(education),
+        });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save education");
+    }
   };
 
   const handleAddSkill = (category: keyof Skills, skill: string) => {
@@ -156,30 +240,66 @@ export function ProfileEdit({ onSave, onCancel }: ProfileEditProps) {
       setIsSaving(true);
       setError(null);
 
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Not authenticated");
+      }
+
+      // 1. Update profile main info
       const profileData = {
         headline,
         summary,
         location,
         phone,
-        experiences,
-        educations,
-        skills,
       };
 
       console.log("[PROFILE_EDIT] Saving profile:", profileData);
 
-      const result = await apiCall<any>("http://localhost:5100/api/profile", {
-        method: "POST",
+      await apiCall<any>(`${API_BASE_URL}/api/profile`, {
+        method: "PATCH",
         body: JSON.stringify(profileData),
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      console.log("[PROFILE_EDIT] Profile saved:", result);
+      // 2. Save experiences
+      for (const experience of experiences) {
+        if (experience.company || experience.role) {
+          await handleSaveExperience(experience);
+        }
+      }
+
+      // 3. Save educations
+      for (const education of educations) {
+        if (education.degree || education.institution) {
+          await handleSaveEducation(education);
+        }
+      }
+
+      // 4. Save skills
+      if (
+        skills.frontend.length > 0 ||
+        skills.backend.length > 0 ||
+        skills.tools.length > 0
+      ) {
+        await apiCall<any>(`${API_BASE_URL}/api/profile/skills`, {
+          method: "POST",
+          body: JSON.stringify(skills),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      console.log("[PROFILE_EDIT] All data saved successfully");
 
       if (onSave) {
-        onSave(result);
+        onSave({ profileData, experiences, educations, skills });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save profile");
+      console.error("[PROFILE_EDIT] Error:", err);
     } finally {
       setIsSaving(false);
     }
