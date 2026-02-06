@@ -18,9 +18,7 @@ Your frontend is now configured for Vercel deployment. The code has been updated
 2. Go to **"Environment Variables"**
 3. Add:
    - **Name**: `VITE_API_BASE_URL`
-   - **Value**: Your production backend API URL
-     - Example: `https://api.recruitment-portal.com`
-     - Or: `https://your-backend.vercel.app`
+   - **Value**: `https://urp-backend-1.onrender.com`
    - **Environment**: Select "Production" (and "Preview" if desired)
 4. Click **"Save"**
 

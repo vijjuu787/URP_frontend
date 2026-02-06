@@ -54,20 +54,18 @@ vercel deploy
 1. Go to **Project Settings** → **Environment Variables**
 2. Add variable:
    - **Name**: `VITE_API_BASE_URL`
-   - **Value**: Your production backend URL (e.g., `https://api.yourdomain.com`)
+   - **Value**: `https://urp-backend-1.onrender.com`
    - **Environment**: Select which environment (Production, Preview, Development)
 
-#### Example Production Backend URLs:
+#### Your Backend URL:
 ```
-https://api.recruitment-portal.com
-https://backend.yourdomain.com/api
-https://your-backend-service.vercel.app
+https://urp-backend-1.onrender.com
 ```
 
 ### 6. **Local Development**
 Ensure `.env.local` is in your root directory:
 ```
-VITE_API_BASE_URL=http://localhost:5100
+VITE_API_BASE_URL=https://urp-backend-1.onrender.com
 ```
 
 ### 7. **Testing Before Deployment**
