@@ -13,6 +13,7 @@ Vercel wasn't properly routing all requests to `index.html`, which is required f
 ### Updated `vercel.json`
 
 Changed from:
+
 ```json
 {
   "buildCommand": "npm run build",
@@ -24,6 +25,7 @@ Changed from:
 ```
 
 To:
+
 ```json
 {
   "buildCommand": "npm run build",
@@ -46,6 +48,7 @@ To:
 ### Added `.vercelignore`
 
 This file tells Vercel which files to ignore during deployment:
+
 ```
 node_modules
 .git
@@ -58,12 +61,14 @@ node_modules
 ## ✅ What to Do Now
 
 ### Option 1: Automatic (Recommended)
+
 1. Vercel auto-deploys when you push to GitHub
 2. Changes have already been pushed
 3. Vercel should redeploy automatically
 4. **Wait 2-5 minutes** for the new deployment
 
 ### Option 2: Manual Redeploy in Vercel
+
 1. Go to your Vercel project dashboard
 2. Click **"Deployments"**
 3. Find the latest deployment
@@ -73,6 +78,7 @@ node_modules
 ## 🧪 Test After Fix
 
 Once redeployed:
+
 1. Go to your Vercel URL
 2. Try navigating to different pages:
    - `/` (home/login)
@@ -95,23 +101,25 @@ Once redeployed:
 ## 🔧 Environment Variables Still Needed
 
 Make sure you've set this in Vercel dashboard:
+
 - **Name**: `VITE_API_BASE_URL`
 - **Value**: Your production backend URL
 
 Example:
+
 ```
 https://api.recruitment-portal.com
 ```
 
 ## 📊 Common Vercel Deployment Issues
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| 404 errors on routes | Missing SPA rewrites | ✅ Fixed (rewrites added) |
-| Environment vars not loading | Not set in Vercel | Set in dashboard |
-| API calls fail | Wrong backend URL | Check `VITE_API_BASE_URL` |
-| Build fails | Missing dependencies | Run `npm install` locally first |
-| Blank page | Build output wrong | Check `outputDirectory: "dist"` |
+| Issue                        | Cause                | Fix                             |
+| ---------------------------- | -------------------- | ------------------------------- |
+| 404 errors on routes         | Missing SPA rewrites | ✅ Fixed (rewrites added)       |
+| Environment vars not loading | Not set in Vercel    | Set in dashboard                |
+| API calls fail               | Wrong backend URL    | Check `VITE_API_BASE_URL`       |
+| Build fails                  | Missing dependencies | Run `npm install` locally first |
+| Blank page                   | Build output wrong   | Check `outputDirectory: "dist"` |
 
 ## 🚀 Next Steps
 
@@ -138,10 +146,10 @@ Displays ProfilePage component
 
 1. **Clear browser cache**: Cmd+Shift+R (or Ctrl+Shift+R)
 2. **Wait 5 minutes**: Vercel deployment might still be in progress
-3. **Check Vercel logs**: 
+3. **Check Vercel logs**:
    - Go to Deployment → Logs
    - Look for any errors
-4. **Verify environment variables**: 
+4. **Verify environment variables**:
    - Go to Settings → Environment Variables
    - Check `VITE_API_BASE_URL` is set
 
