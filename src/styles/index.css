@@ -1,0 +1,36 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Custom range slider styling */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-600);
+  cursor: pointer;
+  border: 3px solid var(--bg-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-600);
+  cursor: pointer;
+  border: 3px solid var(--bg-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input[type="range"]:disabled::-webkit-slider-thumb {
+  background: var(--gray-400);
+  cursor: not-allowed;
+}
+
+input[type="range"]:disabled::-moz-range-thumb {
+  background: var(--gray-400);
+  cursor: not-allowed;
+}
