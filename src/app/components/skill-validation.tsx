@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { apiCall } from "../utils/api";
+import { API_BASE_URL } from "../../config/api";
 
 interface JobDetails {
   id: number;
@@ -118,7 +119,7 @@ export function SkillValidation({
           jobDetails.id,
         );
         const result = await apiCall<any>(
-          `http://localhost:5100/api/assignments/job/${jobDetails.id}`,
+          `${API_BASE_URL}/api/assignments/job/${jobDetails.id}`,
           { method: "GET" },
         );
 

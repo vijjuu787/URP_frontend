@@ -7,6 +7,7 @@ Your frontend is now configured for Vercel deployment. The code has been updated
 ## 🚀 Deploy to Vercel in 3 Steps
 
 ### Step 1: Import GitHub Repository
+
 1. Go to [vercel.com](https://vercel.com)
 2. Click **"New Project"**
 3. Select **"Import Git Repository"**
@@ -14,6 +15,7 @@ Your frontend is now configured for Vercel deployment. The code has been updated
 5. Click **"Import"**
 
 ### Step 2: Add Environment Variable
+
 1. Vercel will show you project settings
 2. Go to **"Environment Variables"**
 3. Add:
@@ -23,6 +25,7 @@ Your frontend is now configured for Vercel deployment. The code has been updated
 4. Click **"Save"**
 
 ### Step 3: Deploy
+
 1. Click **"Deploy"**
 2. Wait for the build to complete
 3. Your app will be live at a Vercel URL like: `https://your-app.vercel.app`
@@ -30,6 +33,7 @@ Your frontend is now configured for Vercel deployment. The code has been updated
 ## 📋 What Changed in Code
 
 ### New Files:
+
 - `src/config/api.ts` - Centralized API configuration
 - `.env.example` - Environment variable template
 - `.env.production` - Production reference
@@ -38,6 +42,7 @@ Your frontend is now configured for Vercel deployment. The code has been updated
 - `DEPLOYMENT_CONFIG_SUMMARY.md` - Full summary
 
 ### Updated Files:
+
 - `src/app/App.tsx` - Updated API endpoints
 - `src/app/components/workbench.tsx` - Updated API endpoints
 - `src/app/components/profile-page.tsx` - Updated API endpoints
@@ -45,11 +50,13 @@ Your frontend is now configured for Vercel deployment. The code has been updated
 ## 🔑 Environment Variable
 
 Set this in Vercel dashboard:
+
 ```
 VITE_API_BASE_URL=https://your-production-backend.com
 ```
 
 Example values:
+
 ```
 https://api.recruitment-portal.com
 https://backend-api.herokuapp.com
@@ -85,12 +92,15 @@ npm run preview
 ## ❓ Common Issues
 
 ### API returns 404
+
 → Check your backend URL in environment variables
 
 ### Environment variables not working
+
 → Redeploy after setting environment variables
 
 ### CORS errors
+
 → Ensure backend allows requests from your Vercel domain
 
 ## 💡 Tips
