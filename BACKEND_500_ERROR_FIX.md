@@ -7,6 +7,7 @@ GET https://urp-backend-1.onrender.com/api/assignments/job/1 500 (Internal Serve
 ```
 
 This means:
+
 - ✅ Frontend is correctly making the API call
 - ✅ Backend received the request
 - ❌ Backend encountered an error processing it
@@ -46,9 +47,11 @@ This means:
 ### Step 2: Common Fixes
 
 #### A. Database Connection Error
+
 **Symptom**: Logs show "ECONNREFUSED" or "DATABASE_URL"
 
 **Fix**:
+
 1. Go to Render Dashboard
 2. Click **URP_BACKEND** service
 3. Go to **Environment** tab
@@ -56,9 +59,11 @@ This means:
 5. Format should be: `postgresql://user:password@host:port/database`
 
 #### B. Prisma Migration Not Run
+
 **Symptom**: Logs show "table does not exist"
 
 **Fix**:
+
 1. Add to Render **Build Command**:
    ```bash
    npm install && npx prisma migrate deploy
@@ -66,9 +71,11 @@ This means:
 2. Or manually run migrations in Render shell
 
 #### C. Missing Assignments Table
+
 **Symptom**: Error about "assignments" table not found
 
 **Fix**:
+
 1. Check `src/backend/prisma/schema.prisma` has Assignment model
 2. Run: `npx prisma migrate deploy`
 3. Redeploy service
@@ -82,7 +89,7 @@ model Assignment {
   id        Int     @id @default(autoincrement())
   jobId     Int
   job       Job     @relation(fields: [jobId], references: [id])
-  
+
   // other fields...
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -98,16 +105,16 @@ In your backend code, ensure the endpoint exists:
 router.get("/assignments/job/:jobId", async (req, res) => {
   try {
     const { jobId } = req.params;
-    
+
     const assignment = await prisma.assignment.findUnique({
       where: { jobId: parseInt(jobId) },
       // include other relations
     });
-    
+
     if (!assignment) {
       return res.status(404).json({ error: "Assignment not found" });
     }
-    
+
     res.json(assignment);
   } catch (error) {
     console.error(error);
@@ -188,6 +195,7 @@ curl -X GET https://urp-backend-1.onrender.com/api/assignments/job/1
 ## 💡 Most Likely Issue
 
 Based on common 500 errors on Render:
+
 - **70%**: DATABASE_URL not set or invalid
 - **20%**: Prisma migrations not run
 - **10%**: Code bug or missing endpoint

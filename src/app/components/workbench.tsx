@@ -341,7 +341,7 @@ export function Workbench({
               onClick={async () => {
                 try {
                   // Use challengeId as jobId for the API call
-                  const token = localStorage.getItem("token");
+                  const token = localStorage.getItem("authToken");
                   const response = await fetch(
                     `${API_BASE_URL}/api/assignments/job/${challengeId}`,
                     {

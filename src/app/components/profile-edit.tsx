@@ -6,6 +6,7 @@ import { Label } from "./ui/label";
 import { apiCall } from "../utils/api";
 import { parseResumeText } from "../utils/resume-parser";
 import { API_BASE_URL } from "../../config/api";
+import { useEffect } from "react";
 
 interface Experience {
   id?: string;
@@ -55,6 +56,54 @@ export function ProfileEdit({ userId, onSave, onCancel }: ProfileEditProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load profile data when userId is provided
+  useEffect(() => {
+    if (!userId) return;
+
+    const loadProfileData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(
+          `${API_BASE_URL}/api/profile/view/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load profile");
+        }
+
+        const data = await response.json();
+        const profileData = data.data || data;
+
+        // Set the loaded data
+        setHeadline(profileData.headline || "");
+        setSummary(profileData.summary || "");
+        setLocation(profileData.location || "");
+        setPhone(profileData.phone || "");
+        setExperiences(profileData.experiences || []);
+        setEducations(profileData.educations || []);
+        setSkills(
+          profileData.skills || { frontend: [], backend: [], tools: [] },
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load profile");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, [userId]);
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -240,7 +289,7 @@ export function ProfileEdit({ userId, onSave, onCancel }: ProfileEditProps) {
       setIsSaving(true);
       setError(null);
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken");
       if (!token) {
         throw new Error("Not authenticated");
       }

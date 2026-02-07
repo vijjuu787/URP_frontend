@@ -11,6 +11,7 @@ The column `assignments.overview` does not exist in the current database.
 Your Prisma schema expects an `overview` column in the `assignments` table, but the database doesn't have it.
 
 This can happen because:
+
 1. The migration file exists but wasn't applied to the database
 2. The database was reset/recreated
 3. The migration file is missing from the project
@@ -20,6 +21,7 @@ This can happen because:
 ### Step 1: Check Your Prisma Schema
 
 In your **backend repository** (`URP_BACKEND`), open:
+
 ```
 prisma/schema.prisma
 ```
@@ -38,10 +40,12 @@ model Assignment {
 ### Step 2: Fix the Schema (If Needed)
 
 **Option A: If `overview` should exist**
+
 - Keep it in the schema
 - Run migrations (see Step 3)
 
 **Option B: If `overview` is NOT needed**
+
 - Remove `overview` from the Prisma schema
 - Create a new migration:
   ```bash
@@ -123,11 +127,13 @@ npx prisma migrate reset
 ## 📋 Migration File Example
 
 Your migration might look like:
+
 ```
 prisma/migrations/[timestamp]_init/migration.sql
 ```
 
 Should contain:
+
 ```sql
 -- assignments table
 CREATE TABLE "Assignment" (
@@ -148,12 +154,12 @@ CREATE TABLE "Assignment" (
 
 ## 📝 Common Solutions
 
-| Issue | Solution |
-|-------|----------|
-| Schema has `overview` but DB doesn't | Run `npx prisma migrate deploy` |
-| DB has `overview` but schema doesn't | Add to Prisma schema + migrate |
-| Mismatch in local vs production | Reset with `npx prisma migrate reset` |
-| Don't know what's in the DB | Use `npx prisma studio` |
+| Issue                                | Solution                              |
+| ------------------------------------ | ------------------------------------- |
+| Schema has `overview` but DB doesn't | Run `npx prisma migrate deploy`       |
+| DB has `overview` but schema doesn't | Add to Prisma schema + migrate        |
+| Mismatch in local vs production      | Reset with `npx prisma migrate reset` |
+| Don't know what's in the DB          | Use `npx prisma studio`               |
 
 ## 🚀 Steps (In Order)
 

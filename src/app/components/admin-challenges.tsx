@@ -19,6 +19,7 @@ import {
   AssignmentData,
 } from "./create-assignment-modal";
 import { apiCall } from "../utils/api";
+import { API_BASE_URL } from "../../config/api";
 
 interface AdminChallengesProps {
   onMenuClick?: () => void;
@@ -153,16 +154,13 @@ export function AdminChallenges({ onMenuClick }: AdminChallengesProps) {
 
       console.log("[CREATE_CHALLENGE] Sending payload:", payload);
 
-      const result = await apiCall<any>(
-        "http://localhost:5100/api/job-postings",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+      const result = await apiCall<any>(`${API_BASE_URL}/api/job-postings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(payload),
+      });
 
       console.log("[CREATE_CHALLENGE] Challenge created successfully:", result);
 
@@ -207,16 +205,13 @@ export function AdminChallenges({ onMenuClick }: AdminChallengesProps) {
 
       console.log("[CREATE_ASSIGNMENT] Sending payload:", payload);
 
-      const result = await apiCall<any>(
-        "http://localhost:5100/api/assignments",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+      const result = await apiCall<any>(`${API_BASE_URL}/api/assignments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(payload),
+      });
 
       console.log(
         "[CREATE_ASSIGNMENT] Assignment created successfully:",

@@ -17,6 +17,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { apiCall } from "../utils/api";
+import { API_BASE_URL } from "../../config/api";
 
 interface OnboardingFormProps {
   onComplete: () => void;
@@ -164,7 +165,7 @@ export function OnboardingForm({ onComplete, onSkip }: OnboardingFormProps) {
         workType: string;
         jobType: string;
         experienceAndProject: string;
-      }>("http://localhost:5100/api/skills", {
+      }>(`${API_BASE_URL}/api/skills`, {
         method: "POST",
         body: JSON.stringify(requestBody),
       });

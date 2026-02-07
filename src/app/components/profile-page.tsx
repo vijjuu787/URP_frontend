@@ -74,43 +74,45 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   const [error, setError] = useState<string | null>(null);
   const [profileCompletion, setProfileCompletion] = useState(85);
 
+  // Function to fetch profile data
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      if (!userId) {
+        setError("User ID not provided. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+      const token = localStorage.getItem("authToken");
+      const url = `${API_BASE_URL}/api/profile/view/${userId}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Failed to fetch profile");
+        setProfileData(null);
+        setIsLoading(false);
+        return;
+      }
+      const profileContent = data.data || data;
+      setProfileData(profileContent);
+      calculateCompletion(profileContent);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load profile");
+      setProfileData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch profile data from backend using userId
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        if (!userId) {
-          setError("User ID not provided. Please log in again.");
-          setIsLoading(false);
-          return;
-        }
-        const token = localStorage.getItem("token");
-        const url = `${API_BASE_URL}/api/profile/view/${userId}`;
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          setError(data.error || "Failed to fetch profile");
-          setProfileData(null);
-          setIsLoading(false);
-          return;
-        }
-        const profileContent = data.data || data;
-        setProfileData(profileContent);
-        calculateCompletion(profileContent);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load profile");
-        setProfileData(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchProfile();
   }, [userId]);
   const calculateCompletion = (profile: ProfileData | null) => {
@@ -158,8 +160,14 @@ export function ProfilePage({ userId }: ProfilePageProps) {
   if (isEditMode) {
     return (
       <ProfileEdit
+        userId={userId}
         onCancel={() => setIsEditMode(false)}
-        onSave={() => setIsEditMode(false)}
+        onSave={() => {
+          setIsEditMode(false);
+          // Refetch profile data after save
+          setIsLoading(true);
+          fetchProfile();
+        }}
       />
     );
   }

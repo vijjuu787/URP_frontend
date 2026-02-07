@@ -14,6 +14,7 @@ import {
 import { Button } from "./ui/button";
 import { AssignmentTimeout } from "./assignment-timeout";
 import { apiCall } from "../utils/api";
+import { API_BASE_URL } from "../../config/api";
 
 interface SubmissionFile {
   id: string;
@@ -127,7 +128,7 @@ export function SubmissionsPage({ candidateId }: SubmissionsPageProps) {
         setError(null);
 
         const data = await apiCall<{ data: BackendSubmission[] }>(
-          `http://localhost:5100/api/assignment/submissions/candidate/${candidateId}`,
+          `${API_BASE_URL}/api/assignment/submissions/candidate/${candidateId}`,
           {
             method: "GET",
           },

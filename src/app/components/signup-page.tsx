@@ -13,6 +13,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { parseResumeText } from "../utils/resume-parser";
 import { apiCall } from "../utils/api";
+import { API_BASE_URL } from "../../config/api";
 
 interface SignupPageProps {
   onSignup: (data: {
@@ -71,7 +72,7 @@ export function SignupPage({ onSignup, onSwitchToLogin }: SignupPageProps) {
 
           // Call the profile endpoint to save extracted data
           const profileResponse = await apiCall<any>(
-            "http://localhost:5100/api/profile",
+            `${API_BASE_URL}/api/profile`,
             {
               method: "POST",
               body: JSON.stringify(profileData),

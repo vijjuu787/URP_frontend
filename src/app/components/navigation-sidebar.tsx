@@ -6,6 +6,7 @@ import {
   LogOut,
   Briefcase,
 } from "lucide-react";
+import { API_BASE_URL } from "../../config/api";
 
 interface NavigationSidebarProps {
   currentPage: "challenges" | "submissions" | "profile" | "jobs";
@@ -24,17 +25,24 @@ export function NavigationSidebar({
     { id: "profile" as const, label: "Profile", icon: User },
   ];
 
-  // Assume you have access to userId from userProfile or authentication context
-  const userId = "";
-
   const handleNavigate = async (
     page: "challenges" | "submissions" | "profile" | "jobs",
   ) => {
     if (page === "profile") {
-      // Fetch candidate profile data from /api/candidate/:id
-      const token = localStorage.getItem("token");
-      const id = userId;
-      const url = `http://localhost:5100/api/candidate/${id}`;
+      // Fetch profile data from /api/profile/view/:id
+      const token = localStorage.getItem("authToken");
+      const userProfile = JSON.parse(
+        localStorage.getItem("userProfile") || "{}",
+      );
+      const id = userProfile?.id || "";
+
+      if (!id) {
+        console.error("[NAVIGATION] No user ID found in localStorage");
+        onNavigate(page);
+        return;
+      }
+
+      const url = `${API_BASE_URL}/api/profile/view/${id}`;
       try {
         const response = await fetch(url, {
           method: "GET",
@@ -45,15 +53,17 @@ export function NavigationSidebar({
         });
         const data = await response.json();
         if (response.ok) {
-          // Pass candidate profile data to ProfilePage or context
+          // Pass profile data to ProfilePage or context
           // Example: onNavigate(page, { profileData: data.data || data });
           onNavigate(page);
         } else {
           // Handle error (optional)
+          console.error("[NAVIGATION] Error fetching profile:", data);
           onNavigate(page);
         }
       } catch (err) {
         // Handle fetch error (optional)
+        console.error("[NAVIGATION] Fetch error:", err);
         onNavigate(page);
       }
     } else {

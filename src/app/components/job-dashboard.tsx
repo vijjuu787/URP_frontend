@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Input } from "./ui/input";
 import { apiCall } from "../utils/api";
+import { API_BASE_URL } from "../../config/api";
 
 interface JobDashboardProps {
   onApplyForJob: (job: Job) => void;
@@ -70,12 +71,9 @@ export function JobDashboard({
         setError(null);
         console.log("[JOB_DASHBOARD] Fetching jobs from API");
 
-        const result = await apiCall<any>(
-          "http://localhost:5100/api/job-postings",
-          {
-            method: "GET",
-          },
-        );
+        const result = await apiCall<any>(`${API_BASE_URL}/api/job-postings`, {
+          method: "GET",
+        });
 
         console.log("[JOB_DASHBOARD] Jobs fetched:", result);
 
@@ -127,7 +125,7 @@ export function JobDashboard({
           );
 
           const result = await apiCall<any>(
-            `http://localhost:5100/api/assignment-starts/candidate/${currentUser.id}`,
+            `${API_BASE_URL}/api/assignment-starts/candidate/${currentUser.id}`,
             {
               method: "GET",
             },
