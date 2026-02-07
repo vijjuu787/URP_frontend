@@ -18,6 +18,7 @@ import { RoleSelector } from "./components/role-selector";
 import { AdminDashboard } from "./components/admin-dashboard";
 import { EngineerDashboard } from "./components/engineer-dashboard";
 import { apiCall } from "./utils/api";
+import { useAuth } from "./context/AuthContext";
 
 type AuthPage = "login" | "signup";
 type AppPage = "challenges" | "submissions" | "profile" | "jobs";
@@ -38,27 +39,15 @@ type View =
   | "role-selector"
   | "review-admin"
   | "review-engineer";
-type UserType =
-  | "candidate"
-  | "admin"
-  | "review-admin"
-  | "review-engineer"
-  | null;
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: "candidate" | "admin" | "review-admin" | "review-engineer";
-}
 
 export default function App() {
+  // Get auth state and functions from context
+  const { user: currentUser, isLoading, isAuthenticated, login, signup, logout } = useAuth();
+
+  // Local component state
   const [currentView, setCurrentView] = useState<View>("login");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState<UserType>(null);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(
     null,
   );
@@ -83,6 +72,9 @@ export default function App() {
     lockedChallengeId?: string;
     timerStartTime?: number;
   } | null>(null);
+
+  // Derive user type from current user's role
+  const userType = currentUser?.role || null;
 
   // Load pending challenge from localStorage on mount and redirect if challenge exists
   useEffect(() => {
@@ -122,59 +114,14 @@ export default function App() {
   }) => {
     try {
       console.log("handleLogin called with:", credentials);
-      const result = await apiCall<{
-        message: string;
-        token: string;
-        user: {
-          id: string;
-          email: string;
-          fullName: string;
-          role: "candidate" | "admin" | "review-admin" | "review-engineer";
-        };
-      }>(`${API_BASE_URL}/api/users/signin`, {
-        method: "POST",
-        body: JSON.stringify({
-          email: credentials.email,
-          password: credentials.password,
-        }),
-      });
+      await login(credentials.email, credentials.password);
+      console.log("Login succeeded");
 
-      console.log("API response:", result);
-
-      // Store token if provided
-      if (result.token) {
-        console.log("Storing token:", result.token);
-        localStorage.setItem("authToken", result.token);
-      }
-
-      // Determine user type from the response role
-      const userType = result.user.role as
-        | "candidate"
-        | "admin"
-        | "review-admin"
-        | "review-engineer";
-
-      // Set current user with response data
-      const mockUser: User = {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.fullName,
-        role: userType,
-      };
-
-      console.log("Setting user:", mockUser);
-      setCurrentUser(mockUser);
-      setIsAuthenticated(true);
-      setUserType(userType);
-
-      // Route based on user type
-      if (userType === "candidate" && !hasCompletedOnboarding) {
-        console.log("Routing to onboarding");
-        setCurrentView("jobs");
-      } else if (userType === "candidate") {
+      // Route based on user type after successful login
+      if (currentUser?.role === "candidate") {
         console.log("Routing to jobs");
         setCurrentView("jobs");
-      } else if (userType === "review-engineer") {
+      } else if (currentUser?.role === "review-engineer") {
         console.log("Routing to engineer dashboard");
         setCurrentView("dashboard");
       } else {
@@ -195,42 +142,14 @@ export default function App() {
     resumeUrl?: string;
   }) => {
     try {
-      const result = await apiCall<{
-        message: string;
-        token: string;
-        user: {
-          id: string;
-          email: string;
-          fullName: string;
-          role: "candidate" | "admin" | "review-admin" | "review-engineer";
-        };
-      }>(`${API_BASE_URL}/api/users/signup`, {
-        method: "POST",
-        body: JSON.stringify({
-          fullName: data.fullName,
-          email: data.email,
-          password: data.password,
-          role: data.role || "candidate",
-          resumeUrl: data.resumeUrl || "",
-        }),
+      await signup({
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
+        role: data.role || "candidate",
+        resumeUrl: data.resumeUrl || "",
       });
 
-      // Store token if provided
-      if (result.token) {
-        localStorage.setItem("authToken", result.token);
-      }
-
-      // Set current user with response data
-      const mockUser: User = {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.fullName,
-        role: result.user.role,
-      };
-
-      setCurrentUser(mockUser);
-      setIsAuthenticated(true);
-      setUserType("candidate");
       setCurrentView("onboarding");
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : "Signup failed");
@@ -389,14 +308,23 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUserType(null);
-    setCurrentView("login");
-    setSelectedChallengeId(null);
-    setIsMobileMenuOpen(false);
-    setHasCompletedOnboarding(false);
-    setPendingJobApplication(null);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setCurrentView("login");
+      setSelectedChallengeId(null);
+      setIsMobileMenuOpen(false);
+      setHasCompletedOnboarding(false);
+      setPendingJobApplication(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Clear local state even if logout fails
+      setCurrentView("login");
+      setSelectedChallengeId(null);
+      setIsMobileMenuOpen(false);
+      setHasCompletedOnboarding(false);
+      setPendingJobApplication(null);
+    }
   };
 
   const handleBackFromWorkbench = () => {
@@ -422,6 +350,36 @@ export default function App() {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  // Show loading screen while checking authentication status
+  if (isLoading) {
+    return (
+      <div
+        className="flex h-screen items-center justify-center"
+        style={{ backgroundColor: "var(--gray-50)" }}
+      >
+        <div className="text-center">
+          <div
+            className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4"
+            style={{
+              backgroundColor: "var(--primary-100)",
+              animation: "spin 1s linear infinite",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-full border-4 border-transparent"
+              style={{
+                borderTopColor: "var(--primary-600)",
+              }}
+            />
+          </div>
+          <p style={{ color: "var(--text-secondary)" }}>
+            Loading your session...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Authentication views
   if (!isAuthenticated) {

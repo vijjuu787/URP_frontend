@@ -1,56 +1,89 @@
+import axios, { AxiosRequestConfig, AxiosError } from "axios";
+import { API_BASE_URL } from "../../config/api";
+
 /**
- * Utility function to make authenticated API calls
- * Automatically includes Bearer token from localStorage if available
+ * Axios instance configured for authenticated requests with HTTP-only cookies
+ * - withCredentials: true enables automatic cookie handling
+ * - Cookies are set by the backend and sent automatically on subsequent requests
+ * - No manual token management needed
+ */
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true, // Enable HTTP-only cookie support
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+/**
+ * Generic API call utility function using axios
+ * Automatically handles HTTP-only cookies via axios instance configuration
+ *
+ * Supports both the new endpoint format (e.g., '/api/endpoint')
+ * and legacy format (e.g., 'https://urp-backend-1.onrender.com/api/endpoint')
+ *
+ * @template T - The expected response type
+ * @param {string} url - The API endpoint (can be full URL or path)
+ * @param {any} options - Request configuration (supports fetch-style or axios-style)
+ * @returns {Promise<T>} The parsed response data
  */
 export async function apiCall<T>(
   url: string,
-  options: RequestInit = {},
+  options: any = {},
 ): Promise<T> {
-  const headers = new Headers(options.headers || {});
+  try {
+    const method = (options.method || "GET").toUpperCase();
 
-  // Add Bearer token if it exists in localStorage
-  const token = localStorage.getItem("authToken");
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
+    // Convert fetch-style options to axios format if needed
+    let axiosConfig: AxiosRequestConfig = {
+      method: method as any,
+      ...options,
+    };
 
-  // Ensure Content-Type is set
-  if (!headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
-
-  console.log(`[API] Making ${options.method || "GET"} request to:`, url);
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  console.log(`[API] Response status:`, response.status, response.statusText);
-
-  if (!response.ok) {
-    const contentType = response.headers.get("content-type");
-    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-
-    try {
-      // Try to parse as JSON
-      if (contentType?.includes("application/json")) {
-        const error = await response.json();
-        errorMessage = error.error || error.message || errorMessage;
-      } else {
-        // If not JSON, read as text
-        const text = await response.text();
-        console.error("[API] Non-JSON error response:", text.substring(0, 200));
-        errorMessage = text.substring(0, 200) || errorMessage;
-      }
-    } catch (e) {
-      console.error("[API] Failed to parse error response:", e);
+    // Convert fetch-style body to axios data
+    if (options.body && typeof options.body === "string") {
+      axiosConfig.data = JSON.parse(options.body);
+      delete (axiosConfig as any).body;
     }
 
-    throw new Error(errorMessage);
-  }
+    // Remove BaseURL from URL if it's included to avoid duplication
+    let endpoint = url;
+    if (endpoint.startsWith("http")) {
+      // If it's a full URL, extract just the path
+      try {
+        const urlObj = new URL(endpoint);
+        endpoint = urlObj.pathname + urlObj.search;
+      } catch (e) {
+        // If URL parsing fails, use as-is
+      }
+    }
 
-  const result = await response.json();
-  console.log(`[API] Response data:`, result);
-  return result;
+    console.log(`[API] Making ${method} request to:`, endpoint);
+
+    const response = await apiClient(endpoint, axiosConfig);
+
+    console.log(`[API] Response status:`, response.status);
+    console.log(`[API] Response data:`, response.data);
+
+    return response.data as T;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<any>;
+      const errorMessage =
+        axiosError.response?.data?.error ||
+        axiosError.response?.data?.message ||
+        axiosError.message ||
+        "Unknown error";
+
+      console.error(
+        `[API] Error ${axiosError.response?.status}:`,
+        errorMessage,
+      );
+
+      throw new Error(errorMessage);
+    }
+
+    console.error("[API] Unexpected error:", error);
+    throw error;
+  }
 }
