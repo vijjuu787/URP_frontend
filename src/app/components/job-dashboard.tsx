@@ -124,22 +124,12 @@ export function JobDashboard({
             currentUser.id,
           );
 
-          const result = await apiCall<any>(
-            `${API_BASE_URL}/api/assignment-starts/candidate/${currentUser.id}`,
-            {
-              method: "GET",
-            },
+          // Note: GET /api/assignment-starts/candidate/:id endpoint does not exist in backend
+          // Initialize with empty array until endpoint is implemented
+          console.warn(
+            "[JOB_DASHBOARD] Assignment starts endpoint not available in backend",
           );
-
-          console.log("[JOB_DASHBOARD] Applied assignments fetched:", result);
-
-          // Extract job IDs from the assignment starts
-          const appliedIds = (result?.data || [])
-            .filter((item: any) => item.job?.id)
-            .map((item: any) => item.job.id);
-
-          console.log("[JOB_DASHBOARD] Applied job IDs:", appliedIds);
-          setAppliedJobIds(appliedIds);
+          setAppliedJobIds([]);
         } catch (err) {
           console.error(
             "[JOB_DASHBOARD] Error fetching applied assignments:",
