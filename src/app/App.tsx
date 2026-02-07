@@ -475,6 +475,7 @@ export default function App() {
           currentPage="jobs"
           onNavigate={handleNavigate}
           onLogout={handleLogout}
+          currentUser={currentUser}
         />
         <SkillValidation
           jobDetails={jobDetails}
@@ -660,6 +661,7 @@ export default function App() {
             currentPage={currentView as AppPage}
             onNavigate={handleNavigate}
             onLogout={handleLogout}
+            currentUser={currentUser}
           />
         )}
 

@@ -12,12 +12,19 @@ interface NavigationSidebarProps {
   currentPage: "challenges" | "submissions" | "profile" | "jobs";
   onNavigate: (page: "challenges" | "submissions" | "profile" | "jobs") => void;
   onLogout: () => void;
+  currentUser?: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  } | null;
 }
 
 export function NavigationSidebar({
   currentPage,
   onNavigate,
   onLogout,
+  currentUser,
 }: NavigationSidebarProps) {
   const navItems = [
     { id: "jobs" as const, label: "Job Recommendations", icon: Briefcase },
@@ -29,20 +36,17 @@ export function NavigationSidebar({
     page: "challenges" | "submissions" | "profile" | "jobs",
   ) => {
     if (page === "profile") {
-      // Fetch profile data from /api/profile/view/:id
-      const token = localStorage.getItem("authToken");
-      const userProfile = JSON.parse(
-        localStorage.getItem("userProfile") || "{}",
-      );
-      const id = userProfile?.id || "";
+      // Get userId from currentUser prop
+      const id = currentUser?.id;
 
       if (!id) {
-        console.error("[NAVIGATION] No user ID found in localStorage");
+        console.error("[NAVIGATION] No user ID found in currentUser");
         onNavigate(page);
         return;
       }
 
-      const url = `${API_BASE_URL}/api/profile/view/${id}`;
+      const token = localStorage.getItem("authToken");
+      const url = `${API_BASE_URL}/api/profile`;
       try {
         const response = await fetch(url, {
           method: "GET",

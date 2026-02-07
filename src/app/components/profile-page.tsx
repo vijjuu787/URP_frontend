@@ -85,7 +85,7 @@ export function ProfilePage({ userId }: ProfilePageProps) {
         return;
       }
       const token = localStorage.getItem("authToken");
-      const url = `${API_BASE_URL}/api/profile/view/${userId}`;
+      const url = `${API_BASE_URL}/api/profile`;
       const response = await fetch(url, {
         method: "GET",
         headers: {

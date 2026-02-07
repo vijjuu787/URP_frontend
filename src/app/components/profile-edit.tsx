@@ -68,7 +68,7 @@ export function ProfileEdit({ userId, onSave, onCancel }: ProfileEditProps) {
         setError(null);
         const token = localStorage.getItem("authToken");
         const response = await fetch(
-          `${API_BASE_URL}/api/profile/view/${userId}`,
+          `${API_BASE_URL}/api/profile`,
           {
             method: "GET",
             headers: {
